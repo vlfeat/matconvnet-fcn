@@ -1,0 +1,3 @@
+[submodule "matconvnet"]
+	path = matconvnet
+	url = https://vedaldi@bitbucket.org/ovl/matconvnet.git
