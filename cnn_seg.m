@@ -4,7 +4,7 @@ run ~/src/vlfeat/toolbox/vl_setup ;
 run matconvnet/matlab/vl_setupnn ;
 addpath matconvnet/examples ;
 
-opts.expDir = 'data/baseline-5' ;
+opts.expDir = 'data/baseline-6' ;
 opts.imdbPath = 'data/voc11/imdb.mat' ;
 opts.imdbStatsPath = fullfile(opts.expDir, 'imdb-stats.mat') ;
 opts.modelPath = 'matconvnet/data/models/imagenet-vgg-f.mat' ;
@@ -91,6 +91,7 @@ else
   load(opts.imdbStatsPath, 'classCounts') ;
 end
 
+classCounts = sqrt(classCounts) ; % soften a bit
 bopts.classWeights = single(sum(classCounts(1)) ./ classCounts)' / 100 ;
 
 % [ims,labels] = get_batch(imdb, train(1:10), bopts) ;

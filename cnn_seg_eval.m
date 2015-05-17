@@ -4,9 +4,9 @@ run ~/src/vlfeat/toolbox/vl_setup ;
 run matconvnet/matlab/vl_setupnn ;
 addpath matconvnet/examples ;
 
-opts.expDir = 'data/baseline-5' ;
+opts.expDir = 'data/baseline-6' ;
 opts.imdbPath = 'data/voc11/imdb.mat';
-opts.modelPath = fullfile(opts.expDir, 'net-epoch-40.mat');
+opts.modelPath = fullfile(opts.expDir, 'net-epoch-36.mat');
 opts.dataDir = 'data/voc11' ;
 opts.vocEdition = '11' ;
 opts.numFetchThreads = 12 ;
@@ -61,9 +61,9 @@ fn = zeros(20,1) ;
 confusion = zeros(21) ;
 
 for i = 1:numel(subset)
-  im = single(imread(sprintf(imdb.paths.image, imdb.images.name{subset(i)}))) ;
+  im0 = single(imread(sprintf(imdb.paths.image, imdb.images.name{subset(i)}))) ;
   lb = imread(sprintf(imdb.paths.classSegmentation, imdb.images.name{subset(i)})) ;
-  im = bsxfun(@minus, im, avg) ;
+  im = bsxfun(@minus, im0, avg) ;
 
   % create a stack of slightly shifted images
   imstack = zeros(size(im,1),size(im,2),3,numel(opts.shifts)^2,'single') ;
@@ -112,7 +112,7 @@ for i = 1:numel(subset)
     'size', [size(lb,1) size(lb,2)]) ;
 
   figure(100) ;clf ;
-  displayImage(im, lb, pred, pred_) ;
+  displayImage(im0/255, lb, pred, pred_) ;
   drawnow;
 
   ok = lb < 255 ;
@@ -125,6 +125,7 @@ for i = 1:numel(subset)
     figure(1) ; clf;
     %displayImage(im, lb, pred, pred_) ;
     imagesc(normalizeConfusion(confusion)) ; axis image ; set(gca,'ydir','normal') ;
+    colormap(jet) ;
     drawnow ;
   end
 end
@@ -146,17 +147,35 @@ end
 function displayImage(im, lb, pred, pred_)
 figure(1) ; clf ;
 subplot(2,2,1) ;
-imagesc(im/255) ;
+image(im) ;
 axis image ;
 
 subplot(2,2,2) ;
-imagesc(lb) ;
+image(uint8(lb)) ;
 axis image ;
 
+cmap = labelColors() ;
 subplot(2,2,3) ;
-imagesc(pred) ;
+image(uint8(pred)) ;
 axis image ;
 
 subplot(2,2,4) ;
-imagesc(pred_) ;
+image(uint8(pred_)) ;
 axis image ;
+
+colormap(cmap) ;
+
+function cmap = labelColors()
+N=21;
+cmap = zeros(N,3);
+for i=1:N
+    id = i-1; r=0;g=0;b=0;
+    for j=0:7
+        r = bitor(r, bitshift(bitget(id,1),7 - j));
+        g = bitor(g, bitshift(bitget(id,2),7 - j));
+        b = bitor(b, bitshift(bitget(id,3),7 - j));
+        id = bitshift(id,-3);
+    end
+    cmap(i,1)=r; cmap(i,2)=g; cmap(i,3)=b;
+end
+cmap = cmap / 255;
