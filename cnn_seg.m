@@ -4,12 +4,13 @@ run ~/src/vlfeat/toolbox/vl_setup ;
 run matconvnet/matlab/vl_setupnn ;
 addpath matconvnet/examples ;
 
-opts.expDir = 'data/baseline-6' ;
-opts.imdbPath = 'data/voc11/imdb.mat' ;
+opts.expDir = 'data/baseline-8' ;
+opts.imdbPath = 'data/voc12/imdb-ext.mat' ;
 opts.imdbStatsPath = fullfile(opts.expDir, 'imdb-stats.mat') ;
 opts.modelPath = 'matconvnet/data/models/imagenet-vgg-f.mat' ;
-opts.dataDir = 'data/voc11' ;
-opts.vocEdition = '11' ;
+opts.dataDir = 'data/voc12' ;
+opts.vocEdition = '12' ;
+opts.vocExtend = true ;
 opts.numFetchThreads = 12 ;
 opts.train.batchSize = 32 ;
 opts.train.numSubBatches = 1 ;
@@ -71,9 +72,13 @@ else
     'includeTest', true, ...
     'includeSegmentation', true, ...
     'includeDetection', true) ;
+  if opts.vocExtend
+    imdb = voc12_seg_extend(imdb, 'dataDir', 'voc12') ;
+  end
   mkdir(opts.expDir) ;
   save(opts.imdbPath, '-struct', 'imdb') ;
 end
+
 train = find(imdb.images.set == 1 & imdb.images.segmentation) ;
 val = find(imdb.images.set == 2 & imdb.images.segmentation) ;
 

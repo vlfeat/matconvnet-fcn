@@ -6,7 +6,7 @@ addpath matconvnet/examples ;
 
 opts.expDir = 'data/baseline-6' ;
 opts.imdbPath = 'data/voc11/imdb.mat';
-opts.modelPath = fullfile(opts.expDir, 'net-epoch-36.mat');
+opts.modelPath = fullfile(opts.expDir, 'net-epoch-60.mat');
 opts.dataDir = 'data/voc11' ;
 opts.vocEdition = '11' ;
 opts.numFetchThreads = 12 ;

@@ -3,10 +3,11 @@ function imdb = voc12_seg_extend(imdb, varargin)
 
 opts.dataDir = 'data/voc12' ;
 opts.archiveDir = 'data/archives' ;
+opts.reduceValSet = true ;
 opts.url = 'http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/semantic_contours/benchmark.tgz' ;
 
 % Get Berkeley data
-archivePath = fullfile(opts.archiveDir, 'berkelekyVoc12Segments.tar.gz') ;
+archivePath = fullfile(opts.archiveDir, 'berkeleyVoc12Segments.tar.gz') ;
 if ~exist(archivePath)
   fprintf('%s: downloading %s to %s\n', mfilename, opts.url, archivePath) ;
   urlwrite(opts.url, archivePath) ;
@@ -14,8 +15,10 @@ end
 
 % Uncompress Berkeley data
 tempDir = fullfile(opts.dataDir, 'berkeley') ;
-mkdir(tempDir) ;
-untar(archivePath, tempDir) ;
+if ~exist(tempDir)
+  mkdir(tempDir) ;
+  untar(archivePath, tempDir) ;
+end
 
 % Merge Berkeley data in PASCAL VOC format
 for k = 1:2
@@ -33,20 +36,25 @@ for k = 1:2
 
   for i = 1:numel(imdb.images.id)
     name = imdb.images.name{i} ;
-    if imdb.images.set(i) == 1
-      % for training images, use the Berkeley annotation if any
-      extPath = fullfile(tempDir, 'dataset', dir1, [name '.mat']) ;
-      pngPath = fullfile(opts.dataDir, dir2, [name '.png']) ;
-      newPngPath = fullfile(opts.dataDir, dir3, [name '.png']) ;
-      if exist(extPath)
+    extPath = fullfile(tempDir, 'benchmark_RELEASE', 'dataset', dir1, [name '.mat']) ;
+    pngPath = fullfile(opts.dataDir, dir2, [name '.png']) ;
+    newPngPath = fullfile(opts.dataDir, dir3, [name '.png']) ;
+
+    if exist(extPath)
+      assert(imdb.images.set(i) < 3) ; % not test
+      % found a Berkeley annotation
+      % skip it if we want to use the original val set and this
+      % is a validation image
+      if (imdb.images.set(i) ~= 2 || opts.reduceValSet)
         anno = load(extPath) ;
-        imwrite(newPngPath, uint8(labels)) ;
+        labels = anno.GTcls.Segmentation ;
+        imwrite(uint8(labels),newPngPath) ;
         imdb.images.segmentation(i) = true ;
-      elseif imdb.images.segmentation(i)
-        % for val and test image, just use the original annotation
-        copyfile(pngPath, newPngPath, 'f') ;
+        imdb.images.set(i) = 1 ;
+        continue ;
       end
-    elseif imdb.images.segmentation(i)
+    end
+    if imdb.images.segmentation(i) & imdb.images.set(i) < 3
       copyfile(pngPath, newPngPath, 'f') ;
     end
   end
