@@ -8,6 +8,7 @@ opts.averageImage = [] ;
 opts.rgbVariance = zeros(0,3,'single') ;
 opts.labelStride = 1 ;
 opts.labelOffset = 0 ;
+opts.classWeights = ones(1,21,'single') ;
 opts.interpolation = 'bilinear' ;
 opts.numThreads = 1 ;
 opts.prefetch = false ;
@@ -28,7 +29,7 @@ ims = zeros(opts.imageSize(1), opts.imageSize(2), 3, ...
 lx = opts.labelOffset : opts.labelStride : opts.imageSize(2) ;
 ly = opts.labelOffset : opts.labelStride : opts.imageSize(1) ;
 labels = zeros(numel(ly), numel(lx), 2, numel(images)*opts.numAugments, 'single') ;
-classWeights = [0 .1 ones(1,20)] ;
+classWeights = [0 opts.classWeights(:)'] ;
 
 im = cell(1,numel(images)) ;
 si = 1 ;
@@ -41,7 +42,7 @@ for i=1:numel(images)
     rgb = single(imread(rgbPath)) ;
     anno = uint8(single(imread(labelsPath))) ;
   else
-    rgb = im{i} ;    
+    rgb = im{i} ;
   end
   if size(rgb,3) == 1
     rgb = cat(3, rgb, rgb, rgb) ;
@@ -50,7 +51,7 @@ for i=1:numel(images)
   % crop & flip
   w = size(rgb,2) ;
   h = size(rgb,1) ;
-  for ai = 1:opts.numAugments    
+  for ai = 1:opts.numAugments
     sz = opts.imageSize(1:2) ;
     tf = rand(3)-.5 ;
     dx = floor((w - sz(2)) * tf(2)) + 1 ;
@@ -60,7 +61,7 @@ for i=1:numel(images)
     sx = round(linspace(dx, sz(2)+dx-1, opts.imageSize(2))) ;
     sy = round(linspace(dy, sz(1)+dy-1, opts.imageSize(1))) ;
     if flip, sx = fliplr(sx) ; end
-    
+
     okx = find(1 <= sx & sx <= w) ;
     oky = find(1 <= sy & sy <= h) ;
 
@@ -73,9 +74,9 @@ for i=1:numel(images)
     tlabels = zeros(opts.imageSize(1), opts.imageSize(2), 'uint8') + 255 ;
     tlabels(oky,okx) = anno(sy(oky),sx(okx)) ;
     tlabels = single(tlabels(ly,lx)) ;
-    tlabels = mod(tlabels + 1, 256) ;
+    tlabels = mod(tlabels + 1, 256) ; % 0 = ignore, 1 = bkg
     labels(:,:,1,si) = tlabels ;
-    labels(:,:,2,si) = classWeights(tlabels+1) ;
+    labels(:,:,2,si) = classWeights(tlabels + 1) ;
     si = si + 1 ;
   end
 end

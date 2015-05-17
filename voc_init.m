@@ -8,7 +8,7 @@ opts.includeTest = false ;
 opts = vl_argparse(opts, varargin) ;
 
 % Download data
-if ~exist(opts.dataDir), download(opts) ; end
+if ~exist(fullfile(opts.dataDir,'Annotations')), download(opts) ; end
 
 % Source images and classes
 imdb.paths.image = fullfile(opts.dataDir, 'JPEGImages', '%s.jpg') ;
@@ -89,7 +89,7 @@ movefile(fullfile(opts.dataDir, 'TrainVal'), fullfile(opts.dataDir,'Test')) ;
 if opts.includeTest
   archivePath=fullfile(opts.archiveDir, testData) ;
   if ~exist(archivePath)
-    error('Cannot download the test data automatically. Please download the file %s manually from the PASCAL test server.', opts.archivePath)
+    error('Cannot download the test data automatically. Please download the file %s manually from the PASCAL test server.', archivePath)
   end
   fprintf('%s: decompressing and rearranging %s\n', mfilename, archivePath) ;
   untar(archivePath, opts.dataDir) ;
