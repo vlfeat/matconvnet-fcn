@@ -6,10 +6,11 @@ addpath matconvnet/examples ;
 
 opts.expDir = 'data/baseline-5' ;
 opts.imdbPath = 'data/voc11/imdb.mat';
-opts.modelPath = fullfile(opts.expDir, 'net-epoch-10.mat');
+opts.modelPath = fullfile(opts.expDir, 'net-epoch-40.mat');
 opts.dataDir = 'data/voc11' ;
 opts.vocEdition = '11' ;
 opts.numFetchThreads = 12 ;
+opts.shifts = [0 8 16 24] ;
 opts = vl_argparse(opts, varargin) ;
 
 % -------------------------------------------------------------------------
@@ -44,10 +45,10 @@ val = find(imdb.images.set == 2 & imdb.images.segmentation) ;
 %                                                               Evaluation
 % -------------------------------------------------------------------------
 
-evaluate(net, imdb, val) ;
+evaluate(opts, net, imdb, val) ;
 
 % -------------------------------------------------------------------------
-function evaluate(net, imdb, subset)
+function evaluate(opts, net, imdb, subset)
 % -------------------------------------------------------------------------
 
 avg = mean(mean(net.normalization.averageImage,2),1) ;
@@ -62,16 +63,41 @@ confusion = zeros(21) ;
 for i = 1:numel(subset)
   im = single(imread(sprintf(imdb.paths.image, imdb.images.name{subset(i)}))) ;
   lb = imread(sprintf(imdb.paths.classSegmentation, imdb.images.name{subset(i)})) ;
+  im = bsxfun(@minus, im, avg) ;
 
-  im_ = bsxfun(@minus, im, avg) ;
-  res = vl_simplenn(net, im) ;
+  % create a stack of slightly shifted images
+  imstack = zeros(size(im,1),size(im,2),3,numel(opts.shifts)^2,'single') ;
+  q = 0 ;
+  for dx = opts.shifts
+    for dy = opts.shifts
+      q = q + 1 ;
+      imstack(1:end-dy,1:end-dx,:,q) = im(1+dy:end,1+dx:end,:) ;
+    end
+  end
 
+  % classify shifted images
+  res = vl_simplenn(net, imstack) ;
   [~,pred] = max(res(end).x,[],3) ;
   pred = pred - 1 ;
 
+  % recompose overall prediction
+  m = numel(opts.shifts) ;
+  pred_ = zeros(size(pred,1)*m, ...
+                size(pred,2)*m,'single') ;
+  q = 0 ;
+  for dx = 1:m
+    for dy = 1:m
+      q = q + 1 ;
+      pred_(dy + m*(0:size(pred,1)-1), ...
+            dx + m*(0:size(pred,2)-1)) = pred(:,:,q) ;
+    end
+  end
+  pred = pred_ ;
+
+
   t = maketform('affine',eye(3)) ;
-  offset = net.normalization.offset;
-  stride = net.normalization.stride;
+  offset = net.normalization.offset ;
+  stride = net.normalization.stride / m ;
   lx = offset + (0:size(pred,2)-1)*stride ;
   ly = offset + (0:size(pred,1)-1)*stride ;
   lbx = 1:size(lb,2) ;
@@ -84,6 +110,10 @@ for i = 1:numel(subset)
     'xdata', [1 size(lb,2)], ...
     'ydata', [1 size(lb,1)], ...
     'size', [size(lb,1) size(lb,2)]) ;
+
+  figure(100) ;clf ;
+  displayImage(im, lb, pred, pred_) ;
+  drawnow;
 
   ok = lb < 255 ;
   confusion = confusion + accumarray([lb(ok),pred_(ok)]+1,1,[21 21]) ;
@@ -129,4 +159,4 @@ axis image ;
 
 subplot(2,2,4) ;
 imagesc(pred_) ;
-  axis image ;
+axis image ;

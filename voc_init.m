@@ -50,7 +50,7 @@ end
 if opts.includeDetection
   imdb.aspects.id = uint8(1:5) ;
   imdb.aspects.name = {'front', 'rear', 'left', 'right', 'misc'} ;
-  imdb = addDetections(opts, imdb) ;  
+  imdb = addDetections(opts, imdb) ;
 end
 
 % Check images on disk and get their size
@@ -84,7 +84,13 @@ if ~exist(archivePath)
 end
 fprintf('%s: decompressing and rearranging %s\n', mfilename, archivePath) ;
 untar(archivePath, opts.dataDir) ;
-movefile(fullfile(opts.dataDir, 'TrainVal'), fullfile(opts.dataDir,'Test')) ;
+switch opts.edition
+  case '11'
+    % Decompresses in TrainVal/VOCdevkit, Test/VOCdevkit (sigh!)
+    movefile(fullfile(opts.dataDir, 'TrainVal'), fullfile(opts.dataDir,'Test')) ;
+  otherwise
+    % Decomporesses directly in VOCdevkit
+end
 
 if opts.includeTest
   archivePath=fullfile(opts.archiveDir, testData) ;
@@ -94,8 +100,14 @@ if opts.includeTest
   fprintf('%s: decompressing and rearranging %s\n', mfilename, archivePath) ;
   untar(archivePath, opts.dataDir) ;
 end
-movefile(fullfile(opts.dataDir, 'Test', 'VOCdevkit', sprintf('VOC20%s',opts.edition), '*'), opts.dataDir) ;
-rmdir(fullfile(opts.dataDir, 'Test'),'s') ;
+switch opts.edition
+  case '11'
+    movefile(fullfile(opts.dataDir, 'Test', 'VOCdevkit', sprintf('VOC20%s',opts.edition), '*'), opts.dataDir) ;
+    rmdir(fullfile(opts.dataDir, 'Test'),'s') ;
+  otherwise
+    movefile(fullfile(opts.dataDir, 'VOCdevkit', sprintf('VOC20%s',opts.edition), '*'), opts.dataDir) ;
+    rmdir(fullfile(opts.dataDir, 'VOCdevkit'),'s') ;
+end
 
 % -------------------------------------------------------------------------
 function [imdb, index] = addImageSet(opts, imdb, index, setName, setCode)
