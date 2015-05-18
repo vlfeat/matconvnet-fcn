@@ -4,11 +4,11 @@ run ~/src/vlfeat/toolbox/vl_setup ;
 run matconvnet/matlab/vl_setupnn ;
 addpath matconvnet/examples ;
 
-opts.expDir = 'data/baseline-6' ;
-opts.imdbPath = 'data/voc11/imdb.mat';
-opts.modelPath = fullfile(opts.expDir, 'net-epoch-60.mat');
-opts.dataDir = 'data/voc11' ;
-opts.vocEdition = '11' ;
+opts.expDir = 'data/baseline-10' ;
+opts.imdbPath = 'data/voc12/imdb-ext.mat';
+opts.modelPath = fullfile(opts.expDir, 'net-epoch-20.mat');
+opts.dataDir = 'data/voc12' ;
+opts.vocEdition = '12' ;
 opts.numFetchThreads = 12 ;
 opts.shifts = [0 8 16 24] ;
 opts = vl_argparse(opts, varargin) ;

@@ -4,7 +4,7 @@ run ~/src/vlfeat/toolbox/vl_setup ;
 run matconvnet/matlab/vl_setupnn ;
 addpath matconvnet/examples ;
 
-opts.expDir = 'data/baseline-8' ;
+opts.expDir = 'data/baseline-10' ;
 opts.imdbPath = 'data/voc12/imdb-ext.mat' ;
 opts.imdbStatsPath = fullfile(opts.expDir, 'imdb-stats.mat') ;
 opts.modelPath = 'matconvnet/data/models/imagenet-vgg-f.mat' ;
@@ -19,7 +19,7 @@ opts.train.gpus = [3] ;
 opts.train.prefetch = true ;
 opts.train.sync = false ;
 opts.train.expDir = opts.expDir ;
-opts.train.learningRate = 0.01*logspace(-2, -4, 60) ;
+opts.train.learningRate = [0.001*ones(1,15) 0.0001*ones(1,15)] ;
 opts.train.numEpochs = numel(opts.train.learningRate) ;
 opts = vl_argparse(opts, varargin) ;
 
