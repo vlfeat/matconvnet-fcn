@@ -14,6 +14,13 @@ opts.numThreads = 1 ;
 opts.prefetch = false ;
 opts = vl_argparse(opts, varargin);
 
+if opts.prefetch
+  %vl_imreadjpeg(images, 'numThreads', opts.numThreads, 'prefetch') ;
+  ims = [] ;
+  labels = [] ;
+  return ;
+end
+
 if ~isempty(opts.rgbVariance) && isempty(opts.averageImage)
   opts.averageImage = zeros(1,1,3) ;
 end
@@ -39,8 +46,10 @@ for i=1:numel(images)
   if isempty(im{i})
     rgbPath = sprintf(imdb.paths.image, imdb.images.name{images(i)}) ;
     labelsPath = sprintf(imdb.paths.classSegmentation, imdb.images.name{images(i)}) ;
-    rgb = single(imread(rgbPath)) ;
-    anno = uint8(single(imread(labelsPath))) ;
+    %rgb = single(imread(rgbPath)) ;
+    rgb = vl_imreadjpeg({rgbPath}) ;
+    rgb = rgb{1} ;
+    anno = imread(labelsPath) ;
   else
     rgb = im{i} ;
   end
