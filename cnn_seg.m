@@ -162,9 +162,9 @@ for t=1:bs:numel(train)
   batch = train(t:min(t+bs-1, numel(train))) ;
   fprintf('collecting image stats: batch starting with image %d ...', batch(1)) ;
   temp = fn(imdb, batch) ;
-  z = reshape(permute(temp,[3 1 2 4]),3,[]) ;
+  z = reshape(permute(temp{2},[3 1 2 4]),3,[]) ;
   n = size(z,2) ;
-  avg{t} = mean(temp, 4) ;
+  avg{t} = mean(temp{2}, 4) ;
   rgbm1{t} = sum(z,2)/n ;
   rgbm2{t} = z*z'/n ;
   batch_time = toc(batch_time) ;
