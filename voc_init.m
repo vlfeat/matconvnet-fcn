@@ -145,6 +145,7 @@ for i=1:length(segNames)
   if index.isKey(segNames{i})
     k = index(segNames{i}) ;
     imdb.images.segmentation(k) = true ;
+    imdb.images.set(k) = setCode ;
   else
     j = j + 1 ;
     index(segNames{i}) = j ;
@@ -155,6 +156,7 @@ for i=1:length(segNames)
     imdb.images.segmentation(j) = true ;
   end
 end
+
 
 % -------------------------------------------------------------------------
 function imdb = getImageSizes(imdb)
