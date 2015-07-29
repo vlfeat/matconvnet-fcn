@@ -91,7 +91,7 @@ for i = 1:numel(subset)
   [~,pred] = max(pred,[],3) ;
 
 %   Save segmentation
-%   imname = strcat(opts.result,sprintf('%s.png',imdb.images.name{subset(i)}));
+%   imname = strcat(opts.results,sprintf('%s.png',imdb.images.name{subset(i)}));
 %   imwrite(pred,labelColors(),imname,'png');
 
 %   Print segmentation
