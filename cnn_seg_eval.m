@@ -39,6 +39,9 @@ else
   mkdir(opts.expDir) ;
   save(opts.imdbPath, '-struct', 'imdb') ;
 end
+
+if ~exist(opts.results), mkdir(opts.results) ; end
+
 % load(opts.averageIm, 'averageImage') ;
 % net.normalization.averageImage = averageImage ; 
 train = find(imdb.images.set == 1 & imdb.images.segmentation) ;
