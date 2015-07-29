@@ -4,12 +4,12 @@ function cnn_seg(varargin)
 run matconvnet/matlab/vl_setupnn ;
 addpath matconvnet/examples ;
 
-opts.expDir = 'data/baseline-vgg16-32svoc2011' ;
-opts.imdbPath = 'data/VOC2011/imdb-ext.mat' ;
+opts.expDir = 'data/baseline-vgg16-32svoc12' ;
+opts.imdbPath = 'data/voc12/imdb-ext.mat' ;
 opts.imdbStatsPath = fullfile(opts.expDir, 'imdb-stats.mat') ;
 opts.averageIm = fullfile(opts.expDir, 'imageStats.mat') ;
 opts.modelPath = 'data/trainFCN/pascalvoc2012-FCN32s' ;
-opts.dataDir = 'data/VOC2011' ;
+opts.dataDir = 'data/voc12' ;
 opts.vocEdition = '12' ;
 opts.vocExtend = true ;
 opts.numFetchThreads = 12 ;
