@@ -91,7 +91,7 @@ for i = 1:numel(subset)
   [~,pred] = max(pred,[],3) ;
 
 %   Save segmentation
-%   imname = strcat(opts.results,sprintf('%s.png',imdb.images.name{subset(i)}));
+%   imname = strcat(opts.results,sprintf('/%s.png',imdb.images.name{subset(i)}));
 %   imwrite(pred,labelColors(),imname,'png');
 
 %   Print segmentation
@@ -141,7 +141,7 @@ function [im, lb] = loadImage(imdb, imId, bopts)
 
 function nconfusion = normalizeConfusion(confusion)
 % normalize confusion by row (each row contains a gt label)
-nconfusion = bsxfun(@rdivide, confusion, sum(confusion,2)) ;
+nconfusion = bsxfun(@rdivide, double(confusion), double(sum(confusion,2))) ;
 
 function accuracies = getAccuracyFromConfusion(confusion)
 % The accuracy is: true positive / (true positive + false positive + false negative) 
