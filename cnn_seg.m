@@ -66,7 +66,7 @@ else
   
   % Remove last layer
   net.removeLayer('loss') ;
-  net.layers(end).outputs = 'x36' ;
+  net.layers(end).outputs = 'x38' ;
   
   % Add deconvolutional layer
   params = struct(...
@@ -75,8 +75,8 @@ else
          'learningRate', 0, ...
          'weightDecay', 1) ;
      
-  net.addLayer('deconv', dagnn.ConvTranspose('upsample', 32 , 'crop', 16, ...
-    'numGroups', 21 ), 'x36' , 'prediction', {params.name} ) ;
+  net.addLayer('deconv', dagnn.ConvTranspose('upsample', 32 , 'crop', 6, ...
+    'numGroups', 21 ), 'x38' , 'prediction', {params.name} ) ;
 
   f = net.getParamIndex(params.name) ;
   net.params(f).value = params.value ;
