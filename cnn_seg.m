@@ -16,7 +16,7 @@ opts.numFetchThreads = 12 ;
 opts.train.batchSize = 20 ;
 opts.train.numSubBatches = 10 ;
 opts.train.continue = true ;
-opts.train.gpus = [ 1  ] ;
+opts.train.gpus = [  ] ;
 opts.train.prefetch = true ;
 opts.train.expDir = opts.expDir ;
 opts.train.learningRate = [0.0001*ones(1,175)] ;
@@ -28,12 +28,76 @@ opts = vl_argparse(opts, varargin) ;
 %                                                    Network initialization
 % -------------------------------------------------------------------------
 
-load(opts.modelPath) ;
+%dropout and learning rate
 
+% Download model
+if exist(opts.modelPath)
+  load(opts.modelPath) ;
+else
+  urlwrite('http://www.vlfeat.org/matconvnet/models/imagenet-vgg-verydeep-16.mat', opts.modelPath) ;
+  net = load(opts.modelPath) ;
+  
+  % Add dropout to the network
+  drop1 = struct('name', 'dropout1', 'type', 'dropout', 'rate' , 0.5) ;
+  drop2 = struct('name', 'dropout2', 'type', 'dropout', 'rate' , 0.5) ;
+  net.layers = [ net.layers(1:33) drop1 net.layers(34:35) drop2 net.layers(36:end) ] ;
+  
+  net = dagnn.DagNN.fromSimpleNN(net) ;
+  
+  % Additionnal padding
+  net.layers(1).block.pad = 100 ;
 
-% net.layers.addLayer('objective', dagnn.Loss('loss', 'softmaxlog'), ...
-%              {'prediction','label'}, 'objective') ;
-% net.layers.vars(40).precious = 1;
+  % Modify Bias learning rate
+  for i = 1:numel(net.layers)-1
+    if (isa(net.layers(i).block, 'dagnn.Conv') && net.layers(i).block.hasBias) 
+      paramIndex = net.getParamIndex(net.layers(i).params{2}) ;
+      net.params(paramIndex).learningRate = 2*net.params(paramIndex-1).learningRate ;
+    end
+  end
+  
+  % Modify last fully connected layer
+  filters = net.layers(end-1).params ;
+  indexes = net.getParamIndex(filters) ;
+  for i = 1:numel(indexes)
+    sz = size(net.params(indexes(i)).value) ;
+    sz(end) = 21 ;
+    net.params(indexes(i)).value = zeros(sz, 'single') ;
+  end
+  
+  % Remove last layer
+  net.removeLayer('loss') ;
+  net.layers(end).outputs = 'x36' ;
+  
+  % Add deconvolutional layer
+  params = struct(...
+         'name', 'deconvf', ...
+         'value', bilinear_u(64, 21, 21) , ...
+         'learningRate', 0, ...
+         'weightDecay', 1) ;
+     
+  net.addLayer('deconv', dagnn.ConvTranspose('upsample', 32 , 'crop', 16, ...
+    'numGroups', 21 ), 'x36' , 'prediction', {params.name} ) ;
+
+  f = net.getParamIndex(params.name) ;
+  net.params(f).value = params.value ;
+  net.params(f).learningRate = params.learningRate ;
+  net.params(f).weightDecay = params.weightDecay ;
+  
+  % Prediction layer is precious for statistics
+  net.vars(net.getVarIndex('prediction')).precious = 1 ;
+
+  
+  % Add loss layer      
+  net.addLayer('objective', dagnn.Loss('loss', 'softmaxlog'), ...
+             {'prediction','label'}, 'objective') ;
+         
+  layers = net ;
+  net =  struct( ...
+    'layers', [] , ...
+    'classes', struct, ...
+    'normalization', struct) ;
+  net.layers = layers ;
+end 
 
 % -------------------------------------------------------------------------
 %                                                   Database initialization
