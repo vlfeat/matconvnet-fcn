@@ -1,37 +1,35 @@
-classdef SegmentationAccuracy < dagnn.ElementWise
+classdef SegmentationAccuracy < dagnn.Loss
 
   properties (Transient)
     pixelAccuracy = 0
     meanAccuracy = 0
     meanIntersectionUnion = 0
-    average = [0;0;0]
     confusion = 0
   end
 
   methods
-    function outputs = forward(obj, inputs, params) 
+    function outputs = forward(obj, inputs, params)
       predictions = gather(inputs{1}) ;
       labels = gather(inputs{2}) ;
       [~,predictions] = sort(predictions, 3, 'descend') ;
 
-      % error = bsxfun(@eq, predictions, labels) ;
-      nlabels = size(predictions, 3) ;
-
       % compute statistics only on accumulated pixels
       ok = labels > 0 ;
+      numPixels = sum(ok(:)) ;
       obj.confusion = obj.confusion + ...
         accumarray([labels(ok),predictions(ok)],1,[21 21]) ;
-      
-      % compute various statistics of the confusion matrix
-      gt = sum(obj.confusion,2) ;
-      res = sum(obj.confusion,1)' ;
-      dg = diag(obj.confusion) ;
 
-      obj.pixelAccuracy = sum(dg) / max(1,sum(obj.confusion(:))) ;
-      obj.meanAccuracy = mean(dg ./ max(1, gt)) ;
-      obj.meanIntersectionUnion = mean(dg ./ max(1, gt + res - dg)) ;      
-      
+      % compute various statistics of the confusion matrix
+      pos = sum(obj.confusion,2) ;
+      res = sum(obj.confusion,1)' ;
+      tp = diag(obj.confusion) ;
+
+      obj.pixelAccuracy = sum(tp) / max(1,sum(obj.confusion(:))) ;
+      obj.meanAccuracy = mean(tp ./ max(1, pos)) ;
+      obj.meanIntersectionUnion = mean(tp ./ max(1, pos + res - tp)) ;
+
       obj.average = [obj.pixelAccuracy ; obj.meanAccuracy ; obj.meanIntersectionUnion] ;
+      obj.numAveraged = obj.numAveraged + numPixels ;
       outputs{1} = obj.average ;
     end
 
@@ -47,19 +45,12 @@ classdef SegmentationAccuracy < dagnn.ElementWise
       obj.meanAccuracy = 0 ;
       obj.meanIntersectionUnion = 0 ;
       obj.average = [0;0;0] ;
+      obj.numAveraged = 0 ;
     end
 
-    function outputSizes = getOutputSizes(obj, inputSizes, paramSizes)
-      outputSizes{1} = [1 1 1 inputSizes{1}(1)] ;
-    end
-
-    function rfs = getReceptiveFields(obj)
-      % the receptive field depends on the dimension of the variables
-      % which is not known until the network is run
-      rfs(1,1).size = [NaN NaN] ;
-      rfs(1,1).stride = [NaN NaN] ;
-      rfs(1,1).offset = [NaN NaN] ;
-      rfs(2,1) = rfs(1,1) ;
+    function str = toString(obj)
+      str = sprintf('acc:%.2f, mAcc:%.2f, mIU:%.2f', ...
+                    obj.pixelAccuracy, obj.meanAccuracy, obj.meanIntersectionUnion) ;
     end
 
     function obj = SegmentationAccuracy(varargin)

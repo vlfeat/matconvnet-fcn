@@ -1,4 +1,5 @@
 function fcnTrain(varargin)
+%FNCTRAIN  Train FCN model using MatConvNet
 
 run matconvnet/matlab/vl_setupnn ;
 addpath matconvnet/examples ;
@@ -13,7 +14,7 @@ opts.vocAdditionalSegmentations = false ;
 
 opts.sourceModelPath = 'data/models/imagenet-vgg-verydeep-16.mat' ;
 
-opts.numFetchThreads = 1 ;
+opts.numFetchThreads = 1 ; % not used yet
 
 opts.train.batchSize = 20 ;
 opts.train.numSubBatches = 10 ;
@@ -87,5 +88,3 @@ info = cnn_train_dag(net, imdb, getBatchWrapper(bopts), opts.train, ...
 function fn = getBatchWrapper(opts)
 % -------------------------------------------------------------------------
 fn = @(imdb,batch) getBatch(imdb,batch,opts,'prefetch',nargout==0) ;
-
-
