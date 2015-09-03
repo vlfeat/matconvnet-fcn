@@ -1,28 +1,31 @@
 function fcnTrain(varargin)
-%FNCTRAIN  Train FCN model using MatConvNet
+%FNCTRAIN Train FCN model using MatConvNet
 
 run matconvnet/matlab/vl_setupnn ;
 addpath matconvnet/examples ;
 
-opts.expDir = 'data/fcn' ;
+% experiment and data paths
+opts.expDir = 'data/fcn-baseline' ;
+opts.dataDir = 'data/voc12' ;
+opts.sourceModelPath = 'data/models/imagenet-vgg-verydeep-16.mat' ;
+[opts, varargin] = vl_argparse(opts, varargin) ;
+
+% experiment setup
 opts.imdbPath = fullfile(opts.expDir, 'imdb.mat') ;
 opts.imdbStatsPath = fullfile(opts.expDir, 'imdbStats.mat') ;
-
-opts.dataDir = 'data/voc12' ;
 opts.vocEdition = '12' ;
-opts.vocAdditionalSegmentations = false ;
-
-opts.sourceModelPath = 'data/models/imagenet-vgg-verydeep-16.mat' ;
+opts.vocAdditionalSegmentations = true ;
 
 opts.numFetchThreads = 1 ; % not used yet
 
+% training options (SGD)
 opts.train.batchSize = 20 ;
 opts.train.numSubBatches = 10 ;
 opts.train.continue = true ;
-opts.train.gpus = [  ] ;
+opts.train.gpus = [] ;
 opts.train.prefetch = true ;
 opts.train.expDir = opts.expDir ;
-opts.train.learningRate = [0.0001*ones(1,175)] ;
+opts.train.learningRate = 0.0001 * ones(1,175) ;
 opts.train.numEpochs = numel(opts.train.learningRate) ;
 
 opts = vl_argparse(opts, varargin) ;
@@ -78,6 +81,7 @@ bopts.numThreads = opts.numFetchThreads ;
 bopts.labelStride = 1 ;
 bopts.labelOffset = 1 ;
 bopts.classWeights = ones(1,21,'single') ;
+bopts.rgbMean = stats.rgbMean ;
 
 % Launch SGD
 info = cnn_train_dag(net, imdb, getBatchWrapper(bopts), opts.train, ...

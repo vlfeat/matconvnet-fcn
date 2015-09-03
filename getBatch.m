@@ -24,6 +24,9 @@ end
 if ~isempty(opts.rgbVariance) && isempty(opts.rgbMean)
   opts.rgbMean = single([128;128;128]) ;
 end
+if ~isempty(opts.rgbMean)
+  opts.rgbMean = reshape(opts.rgbMean, [1 1 3]) ;
+end
 
 % space for images
 ims = zeros(opts.imageSize(1), opts.imageSize(2), 3, ...
@@ -56,18 +59,16 @@ for i=1:numel(images)
   end
 
   % crop & flip
-  w = size(rgb,2) ;
   h = size(rgb,1) ;
+  w = size(rgb,2) ;
   for ai = 1:opts.numAugments
     sz = opts.imageSize(1:2) ;
-    tf = rand(3)-.5 ;
-    dx = floor((w - sz(2)) * tf(2)) + 1 ;
-    dy = floor((h - sz(1)) * tf(1)) + 1 ;
-    flip = tf(3) > 0 ;
+    scale = max(h/sz(1), w/sz(2)) ;
+    scale = scale .* (1 + (rand(1)-.5)/5) ;
 
-    sx = round(linspace(dx, sz(2)+dx-1, opts.imageSize(2))) ;
-    sy = round(linspace(dy, sz(1)+dy-1, opts.imageSize(1))) ;
-    if flip, sx = fliplr(sx) ; end
+    sy = round(scale * ((1:sz(1)) - sz(1)/2) + h/2) ;
+    sx = round(scale * ((1:sz(2)) - sz(2)/2) + w/2) ;
+    if rand > 0.5, sx = fliplr(sx) ; end
 
     okx = find(1 <= sx & sx <= w) ;
     oky = find(1 <= sy & sy <= h) ;
@@ -77,7 +78,7 @@ for i=1:numel(images)
       ims(oky,okx,:,si) = rgb(sy(oky),sx(okx),:) ;
     end
 
-    tlabels = zeros(opts.imageSize(1), opts.imageSize(2), 'uint8') + 255 ;
+    tlabels = zeros(sz(1), sz(2), 'uint8') + 255 ;
     tlabels(oky,okx) = anno(sy(oky),sx(okx)) ;
     tlabels = single(tlabels(ly,lx)) ;
     tlabels = mod(tlabels + 1, 256) ; % 0 = ignore, 1 = bkg

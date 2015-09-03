@@ -15,16 +15,16 @@ opts.reduceValSet = true ;
 opts.url = 'http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/semantic_contours/benchmark.tgz' ;
 opts = vl_argparse(opts, varargin) ;
 
-% Get Berkeley data
-archivePath = fullfile(opts.archiveDir, 'berkeleyVoc12Segments.tar.gz') ;
-if ~exist(archivePath)
-  fprintf('%s: downloading %s to %s\n', mfilename, opts.url, archivePath) ;
-  urlwrite(opts.url, archivePath) ;
-end
-
-% Uncompress Berkeley data
 tempDir = fullfile(opts.dataDir, 'berkeley') ;
 if ~exist(tempDir)
+  % Get Berkeley data
+  archivePath = fullfile(opts.archiveDir, 'berkeleyVoc12Segments.tar.gz') ;
+  if ~exist(archivePath)
+    fprintf('%s: downloading %s to %s\n', mfilename, opts.url, archivePath) ;
+    urlwrite(opts.url, archivePath) ;
+  end
+
+  % Uncompress Berkeley data
   mkdir(tempDir) ;
   untar(archivePath, tempDir) ;
 end
