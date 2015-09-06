@@ -6,7 +6,7 @@ addpath matconvnet/examples ;
 % experiment and data paths
 opts.expDir = 'data/fcn-baseline' ;
 opts.dataDir = 'data/voc12' ;
-opts.modelPath = 'data/fcn-baseline-2/net-epoch-7.mat' ;
+opts.modelPath = 'data/fcn-baseline-2/net-epoch-25.mat' ;
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
 % experiment setup
@@ -80,28 +80,29 @@ for i = 1:numel(val)
   pred = pred(1:sz(1), 1:sz(2)) ;
   pred = padarray(pred, size(lb) - size(pred), 'replicate', 'post') ;
 
-  %   Save segmentation
-  %   imname = strcat(opts.results,sprintf('/%s.png',imdb.images.name{subset(i)}));
-  %   imwrite(pred,labelColors(),imname,'png');
-
-  % Print segmentation
-  figure(100) ;clf ;
-  displayImage(rgb/255, lb, pred) ;
-  drawnow ;
-
-  % accumulate errors
+  % Accumulate errors
   ok = lb > 0 ;
   confusion = confusion + accumarray([lb(ok),pred(ok)],1,[21 21]) ;
 
-  if mod(i,10) == 0
+  % Plots
+  if mod(i - 1,10) == 0 || i == numel(val)
     acc = getAccuracyFromConfusion(confusion) ;
-     fprintf('%4.1f ', 100 * acc) ;
-     fprintf(': %4.1f\n', 100 * mean(acc)) ;
-     figure(1) ; clf;
-     imagesc(normalizeConfusion(confusion)) ;
-     axis image ; set(gca,'ydir','normal') ;
-     colormap(jet) ;
-     drawnow ;
+    fprintf('%4.1f ', 100 * acc) ;
+    fprintf(': %4.1f\n', 100 * mean(acc)) ;
+    figure(1) ; clf;
+    imagesc(normalizeConfusion(confusion)) ;
+    axis image ; set(gca,'ydir','normal') ;
+    colormap(jet) ;
+    drawnow ;
+
+    % Print segmentation
+    figure(100) ;clf ;
+    displayImage(rgb/255, lb, pred) ;
+    drawnow ;
+
+    %   Save segmentation
+    %   imname = strcat(opts.results,sprintf('/%s.png',imdb.images.name{subset(i)}));
+    %   imwrite(pred,labelColors(),imname,'png');
   end
 end
 
@@ -130,15 +131,18 @@ function displayImage(im, lb, pred)
 subplot(2,2,1) ;
 image(im) ;
 axis image ;
+title('source image') ;
 
 subplot(2,2,2) ;
 image(uint8(lb-1)) ;
 axis image ;
+title('ground truth')
 
 cmap = labelColors() ;
 subplot(2,2,3) ;
 image(uint8(pred-1)) ;
 axis image ;
+title('predicted') ;
 
 colormap(cmap) ;
 
