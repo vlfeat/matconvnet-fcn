@@ -86,9 +86,12 @@ for i = 1:numel(val)
 
   % Plots
   if mod(i - 1,10) == 0 || i == numel(val)
-    acc = getAccuracyFromConfusion(confusion) ;
-    fprintf('%4.1f ', 100 * acc) ;
-    fprintf(': %4.1f\n', 100 * mean(acc)) ;
+    [iu, miu, pacc, macc] = getAccuracies(confusion) ;
+    fprintf('IU ') ;
+    fprintf('%4.1f ', 100 * iu) ;
+    fprintf('meanIU: %2.f pixelAcc: %.2f, meanAcc: %.2f\n', ...
+            100*miu, 100*pacc, 100*macc) ;
+
     figure(1) ; clf;
     imagesc(normalizeConfusion(confusion)) ;
     axis image ; set(gca,'ydir','normal') ;
@@ -112,18 +115,17 @@ function nconfusion = normalizeConfusion(confusion)
 % normalize confusion by row (each row contains a gt label)
 nconfusion = bsxfun(@rdivide, double(confusion), double(sum(confusion,2))) ;
 
+
 % -------------------------------------------------------------------------
-function accuracies = getAccuracyFromConfusion(confusion)
+function [IU, meanIU, pixelAccuracy, meanAccuracy] = getAccuracies(confusion)
 % -------------------------------------------------------------------------
-% The accuracy is: true positive / (true positive + false positive + false negative)
-% which is equivalent to the following percentage:
-accuracies = zeros(1,21) ;
-for c = 1:21
-   gtj=sum(confusion(c,:));
-   resj=sum(confusion(:,c));
-   gtjresj=confusion(c,c);
-   accuracies(c) = double(gtjresj)/(double(gtj+resj-gtjresj)+10^-4);
-end
+pos = sum(confusion,2) ;
+res = sum(confusion,1)' ;
+tp = diag(confusion) ;
+IU = tp ./ max(1, pos + res - tp) ;
+meanIU = mean(IU) ;
+pixelAccuracy = sum(tp) / max(1,sum(confusion(:))) ;
+meanAccuracy = mean(tp ./ max(1, pos)) ;
 
 % -------------------------------------------------------------------------
 function displayImage(im, lb, pred)
@@ -162,4 +164,3 @@ for i=1:N
   cmap(i,1)=r; cmap(i,2)=g; cmap(i,3)=b;
 end
 cmap = cmap / 255;
-
