@@ -43,8 +43,11 @@ for k = 1:2
 
   mkdir(fullfile(opts.dataDir, dir3)) ;
 
-  for i = 1:numel(imdb.images.id)
-    name = imdb.images.name{i} ;
+  % Update training data
+  train = textread(fullfile(tempDir, 'benchmark_RELEASE', 'dataset',['train', '.txt','%s','delimiter','\n') ; 
+  
+  for i = 1:numel(train)
+    name = train{i} ;
     extPath = fullfile(tempDir, 'benchmark_RELEASE', 'dataset', dir1, [name '.mat']) ;
     pngPath = fullfile(opts.dataDir, dir2, [name '.png']) ;
     newPngPath = fullfile(opts.dataDir, dir3, [name '.png']) ;
