@@ -11,7 +11,7 @@ function imdb = vocSetupAdditionalSegmentations(imdb, varargin)
 
 opts.dataDir = 'data/voc12' ;
 opts.archiveDir = 'data/archives' ;
-opts.reduceValSet = true ;
+opts.preserveValSet = true ;
 opts.url = 'http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/semantic_contours/benchmark.tgz' ;
 opts = vl_argparse(opts, varargin) ;
 
@@ -44,31 +44,43 @@ for k = 1:2
   mkdir(fullfile(opts.dataDir, dir3)) ;
 
   % Update training data
-  train = textread(fullfile(tempDir, 'benchmark_RELEASE', 'dataset',['train', '.txt','%s','delimiter','\n') ; 
-  
-  for i = 1:numel(train)
-    name = train{i} ;
+  train = textread(fullfile(tempDir, 'benchmark_RELEASE', 'dataset', 'train.txt'), '%s','delimiter','\n') ;
+  val = textread(fullfile(tempDir, 'benchmark_RELEASE', 'dataset', 'val.txt'), '%s','delimiter','\n') ;
+
+  for i = 1:numel(imdb.images.id)
+    name = imdb.images.name{i} ;
     extPath = fullfile(tempDir, 'benchmark_RELEASE', 'dataset', dir1, [name '.mat']) ;
     pngPath = fullfile(opts.dataDir, dir2, [name '.png']) ;
     newPngPath = fullfile(opts.dataDir, dir3, [name '.png']) ;
 
-    if exist(extPath)
-      assert(imdb.images.set(i) < 3) ; % not test
-      % found a Berkeley annotation
-      % skip it if we want to use the original val set and this
-      % is a validation image
-      if (imdb.images.set(i) ~= 2 || opts.reduceValSet)
-        anno = load(extPath) ;
-        labels = anno.GTcls.Segmentation ;
-        imwrite(uint8(labels),newPngPath) ;
-        imdb.images.segmentation(i) = true ;
-        imdb.images.set(i) = 1 ;
-        continue ;
+    isTrain = any(find(strcmp(name, train))) ;
+    isVal = any(find(strcmp(name, val))) ;
+
+    % if this image is not in the berekeley data, copy it over
+    if ~isTrain && ~isVal
+      if imdb.images.segmentation(i) & imdb.images.set(i) < 3
+        copyfile(pngPath, newPngPath, 'f') ;
       end
+      continue ;
     end
-    if imdb.images.segmentation(i) & imdb.images.set(i) < 3
-      copyfile(pngPath, newPngPath, 'f') ;
-    end
+
+    % skip if the image is a validation image in the berkeley data
+    % and if we do not want to modify the validation set
+    if isVal && opts.preserveValSet, continue ; end
+
+    % skip if the image is a training image in the berkely data but
+    % a val image in the PASCAL data and we do not want to modify
+    % the validation set
+    if isTrain && imdb.images.set(i) == 2, continue ; end
+
+    assert(imdb.images.set(i) < 3) ; % not test
+
+    anno = load(extPath) ;
+    labels = anno.GTcls.Segmentation ;
+    imwrite(uint8(labels),newPngPath) ;
+    imdb.images.segmentation(i) = true ;
+    imdb.images.set(i) = isTrain + 2 * isVal ;
+
   end
 end
 

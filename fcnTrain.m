@@ -45,7 +45,9 @@ else
     'includeSegmentation', true, ...
     'includeDetection', false) ;
   if opts.vocAdditionalSegmentations
-    imdb = vocSetupAdditionalSegmentations(imdb, 'dataDir', opts.dataDir) ;
+    imdb = vocSetupAdditionalSegmentations(imdb, ...
+                                           'dataDir', opts.dataDir, ...
+                                           'preserveValSet', true) ;
   end
   mkdir(opts.expDir) ;
   save(opts.imdbPath, '-struct', 'imdb') ;
