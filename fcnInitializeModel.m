@@ -74,8 +74,6 @@ net.addLayer('deconv32', ...
   'hasBias', false), ...
   'x38', 'prediction', 'deconvf') ;
 
-keyboard
-
 f = net.getParamIndex('deconvf') ;
 net.params(f).value = filters ;
 net.params(f).learningRate = 0 ;
@@ -99,7 +97,7 @@ net.addLayer('accuracy', ...
   SegmentationAccuracy(), ...
   {'prediction', 'label'}, 'accuracy') ;
 
-if 1
+if 0
   figure(100) ; clf ;
   n = numel(net.vars) ;
   for i=1:n
@@ -108,7 +106,6 @@ if 1
     title(sprintf('%s', net.vars(i).name)) ;        
     drawnow ;  
   end
-  keyboard
 end
 
 

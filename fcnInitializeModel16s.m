@@ -5,11 +5,11 @@ function net = fcnInitializeModel16s(net)
 net.removeLayer('deconv32') ;
 
 %% Add the first Deconv layer
-filters = single(bilinear_u(3, 1, 21)) ;
+filters = single(bilinear_u(4, 1, 21)) ;
 net.addLayer('deconv2', ...
   dagnn.ConvTranspose('size', size(filters), ...
                       'upsample', 2, ...
-                      'crop', [1 2 1 2], ...
+                      'crop', [1 1 1 1], ...
                       'hasBias', false), ...
              'x38', 'x39', 'deconv1f') ;
 f = net.getParamIndex('deconv1f') ;
@@ -40,7 +40,7 @@ filters = single(bilinear_u(32, 21, 21)) ;
 net.addLayer('deconv16', ...
   dagnn.ConvTranspose('size', size(filters), ...
                       'upsample', 16, ...
-                      'crop', 14+15, ...
+                      'crop', 8, ...
                       'numGroups', 21, ...
                       'hasBias', false), ...
              'x41', 'prediction', 'deconv16f') ;
@@ -56,14 +56,15 @@ net.vars(net.getVarIndex('prediction')).precious = 1 ;
 
 % empirical test
 if 1
-  figure(1) ; clf ;
-  subplot(2,2,1) ;
-  showRF(net, 'input', 'x39') ;
-  subplot(2,2,2) ;
-  showRF(net, 'input', 'x40') ;
-  subplot(2,2,3) ;
-  showRF(net, 'input', 'x41') ;
-  subplot(2,2,4) ;
-  showRF(net, 'input', 'prediction') ;
+  figure(100) ; clf ;
+  n = numel(net.vars) ;
+  for i=1:n
+    vl_tightsubplot(n,i) ;
+    showRF(net, 'input', net.vars(i).name) ;
+    title(sprintf('%s', net.vars(i).name)) ;        
+    drawnow ;  
+  end
 end
+
+keyboard
 
