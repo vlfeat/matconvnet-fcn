@@ -55,7 +55,7 @@ net.params(f).weightDecay = 1 ;
 net.vars(net.getVarIndex('prediction')).precious = 1 ;
 
 % empirical test
-if 1
+if 0
   figure(100) ; clf ;
   n = numel(net.vars) ;
   for i=1:n
@@ -65,6 +65,3 @@ if 1
     drawnow ;  
   end
 end
-
-keyboard
-
