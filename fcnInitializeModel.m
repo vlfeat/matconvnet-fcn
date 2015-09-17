@@ -34,7 +34,7 @@ net.layers(10).block.pad = [0 1 0 1] ;
 net.layers(17).block.pad = [0 1 0 1] ;
 net.layers(24).block.pad = [0 1 0 1] ;
 net.layers(31).block.pad = [0 1 0 1] ;
-net.layers(32).block.pad = [3 3 3 3] ; 
+net.layers(32).block.pad = [3 3 3 3] ;
 % ^-- we could do [2 3 2 3] but that would not use CuDNN
 
 % Modify the bias learning rate for all layers
@@ -64,7 +64,7 @@ net.setLayerOutputs('fc8', {'x38'}) ;
 % Upsampling and prediction layer
 % -------------------------------------------------------------------------
 
-filters = bilinear_u(64, 21, 21) ;
+filters = single(bilinear_u(64, 21, 21)) ;
 net.addLayer('deconv32', ...
   dagnn.ConvTranspose(...
   'size', size(filters), ...
@@ -103,8 +103,8 @@ if 0
   for i=1:n
     vl_tightsubplot(n,i) ;
     showRF(net, 'input', net.vars(i).name) ;
-    title(sprintf('%s', net.vars(i).name)) ;        
-    drawnow ;  
+    title(sprintf('%s', net.vars(i).name)) ;
+    drawnow ;
   end
 end
 

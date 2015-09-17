@@ -1,7 +1,7 @@
 function y = getBatch(imdb, images, varargin)
 % GET_BATCH  Load, preprocess, and pack images for CNN evaluation
 
-opts.imageSize = [500, 500] ;
+opts.imageSize = [512, 512] - 128 ;
 opts.numAugments = 1 ;
 opts.transformation = 'none' ;
 opts.rgbMean = [] ;

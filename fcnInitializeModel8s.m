@@ -1,4 +1,4 @@
-function net = fcnInitializeMode8s(net)
+function net = fcnInitializeModel8s(net)
 %FCNINITIALIZEMODEL8S Initialize the FCN-16S model from FCN-32
 
 %% Remove the last layer
@@ -16,14 +16,14 @@ f = net.getParamIndex('deconv2bisf') ;
 net.params(f).value = filters ;
 net.params(f).learningRate = 0 ;
 net.params(f).weightDecay = 1 ;
-         
+
 %% Add a convolutional layer that take as input the pool3 layer
 net.addLayer('skip3', ...
      dagnn.Conv('size', [1 1 256 21]), ...
      'x17', 'x43', {'skip3f','skip3b'});
-     
+
 f = net.getParamIndex('skip3f') ;
-net.params(f).value = zeros(1, 1, 512, 21, 'single') ;
+net.params(f).value = zeros(1, 1, 256, 21, 'single') ;
 net.params(f).learningRate = 1 ;
 net.params(f).weightDecay = 1 ;
 
@@ -33,7 +33,7 @@ net.params(f).learningRate = 2 ;
 net.params(f).weightDecay = 1 ;
 
 %% Add the sumwise layer
-net.addLayer('sum2', Sum(), {'x42', 'x43'}, 'x44') ; 
+net.addLayer('sum2', Sum(), {'x42', 'x43'}, 'x44') ;
 
 %% Add deconvolutional layer implementing bilinear interpolation
 filters = single(bilinear_u(16, 21, 21)) ;
@@ -55,13 +55,13 @@ net.params(f).weightDecay = 1 ;
 net.vars(net.getVarIndex('prediction')).precious = 1 ;
 
 % empirical test
-if 1
+if 0
   figure(100) ; clf ;
   n = numel(net.vars) ;
   for i=1:n
     vl_tightsubplot(n,i) ;
     showRF(net, 'input', net.vars(i).name) ;
-    title(sprintf('%s', net.vars(i).name)) ;        
-    drawnow ;  
+    title(sprintf('%s', net.vars(i).name)) ;
+    drawnow ;
   end
 end

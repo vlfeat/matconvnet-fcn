@@ -7,6 +7,7 @@ addpath matconvnet/examples ;
 % experiment and data paths
 opts.expDir = 'data/fcn-baseline' ;
 opts.dataDir = 'data/voc12' ;
+opts.modelType = 'fcn32' ;
 opts.sourceModelPath = 'data/models/imagenet-vgg-verydeep-16.mat' ;
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
@@ -71,6 +72,14 @@ end
 
 % Get initial model from VGG-VD-16
 net = fcnInitializeModel('sourceModelPath', opts.sourceModelPath) ;
+if any(strcmp(opts.modelType, {'fcn16s', 'fcn8s'}))
+  % upgrade model to FCN16s
+  net = fcnInitializeModel16s(net) ;
+end
+if strcmp(opts.modelType, 'fcn8s')
+  % upgrade model fto FCN8s
+  net = fcnInitializeModel8s(net) ;
+end
 net.meta.normalization.rgbMean = stats.rgbMean ;
 net.meta.classes = imdb.classes.name ;
 

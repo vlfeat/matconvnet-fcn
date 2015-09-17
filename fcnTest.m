@@ -6,7 +6,7 @@ addpath matconvnet/examples ;
 % experiment and data paths
 opts.expDir = 'data/fcn-baseline' ;
 opts.dataDir = 'data/voc12' ;
-opts.modelPath = 'data/fcn-baseline-2/net-epoch-25.mat' ;
+opts.modelPath = 'data/fcn-baseline-5/net-epoch-10.mat' ;
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
 % experiment setup
@@ -58,6 +58,8 @@ confusion = zeros(21) ;
 
 % Run
 
+predVar = net.getVarIndex('prediction') ;
+
 for i = 1:numel(val)
   imId = val(i) ;
   rgbPath = sprintf(imdb.paths.image, imdb.images.name{imId}) ;
@@ -72,13 +74,21 @@ for i = 1:numel(val)
   im = bsxfun(@minus, single(rgb), ...
               reshape(net.meta.normalization.rgbMean,1,1,3)) ;
 
-  net.eval({'input', im}) ;
-  pred = gather(net.vars(end).value) ;
-  [~,pred] = max(pred,[],3) ;
 
-  sz = min(size(pred), size(lb)) ;
-  pred = pred(1:sz(1), 1:sz(2)) ;
-  pred = padarray(pred, size(lb) - size(pred), 'replicate', 'post') ;
+  sz = [size(im,1), size(im,2)] ;
+  sz_ = round(sz / 32)*32 ;
+  im_ = imresize(im, sz_) ;
+
+  net.eval({'input', im_}) ;
+  scores_ = gather(net.vars(predVar).value) ;
+  [~,pred_] = max(scores_,[],3) ;
+
+  pred = imresize(pred_, sz, 'method', 'nearest') ;
+
+  % sz = min(size(pred), size(lb)) ;
+  %pred = pred(1:sz(1), 1:sz(2)) ;
+  %pred = padarray(pred, size(lb) - size(pred), 'replicate',
+  %'post') ;
 
   % Accumulate errors
   ok = lb > 0 ;
