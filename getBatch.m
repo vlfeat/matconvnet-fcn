@@ -12,6 +12,7 @@ opts.classWeights = ones(1,21,'single') ;
 opts.interpolation = 'bilinear' ;
 opts.numThreads = 1 ;
 opts.prefetch = false ;
+opts.useGpu = false ;
 opts = vl_argparse(opts, varargin);
 
 if opts.prefetch
@@ -85,5 +86,8 @@ for i=1:numel(images)
     labels(:,:,1,si) = tlabels ;
     si = si + 1 ;
   end
+end
+if opts.useGpu
+  ims = gpuArray(ims) ;
 end
 y = {'input', ims, 'label', labels} ;

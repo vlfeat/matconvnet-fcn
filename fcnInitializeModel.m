@@ -57,7 +57,7 @@ net.layers(end-1).block.size = size(...
   net.params(net.getParamIndex(net.layers(end-1).params{1})).value) ;
 
 % Remove the last loss layer
-net.removeLayer('loss') ;
+net.removeLayer('prob') ;
 net.setLayerOutputs('fc8', {'x38'}) ;
 
 % -------------------------------------------------------------------------

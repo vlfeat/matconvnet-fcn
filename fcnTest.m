@@ -4,14 +4,20 @@ run matconvnet/matlab/vl_setupnn ;
 addpath matconvnet/examples ;
 
 % experiment and data paths
-opts.expDir = 'data/fcn-baseline' ;
-opts.dataDir = 'data/voc12' ;
-opts.modelPath = 'data/fcn-baseline-5/net-epoch-10.mat' ;
+opts.expDir = 'data/fcn-baseline-voc11' ;
+opts.dataDir = 'data/voc11' ;
+opts.modelPath = 'data/fcn-baseline-5/net-epoch-51.mat' ;
+
+%opts.modelPath = 'matconvnet/data/models/pascal-fcn32s-dag.mat' ;
+%opts.modelPath = 'matconvnet/data/models/pascal-fcn16s-dag.mat' ;
+opts.modelPath = 'matconvnet/data/models/pascal-fcn8s-dag.mat' ;
+
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
 % experiment setup
 opts.imdbPath = fullfile(opts.expDir, 'imdb.mat') ;
-opts.vocEdition = '12' ;
+opts.vocEdition = '11' ;
+opts.vocAdditionalSegmentations = true ;
 opts = vl_argparse(opts, varargin) ;
 
 % -------------------------------------------------------------------------
@@ -38,16 +44,25 @@ end
 % Get validation subset
 val = find(imdb.images.set == 2 & imdb.images.segmentation) ;
 
+%valNames = sort(imdb.images.name(val)') ;
+%val11Names = textread('data/seg11valid.txt', '%s') ;
+%isequal(valNames, val11Names)
+
 % -------------------------------------------------------------------------
 % Setup model
 % -------------------------------------------------------------------------
 
-net = load(opts.modelPath) ;
-net = dagnn.DagNN.loadobj(net.net) ;
+%net = load(opts.modelPath) ;
+%net = dagnn.DagNN.loadobj(net.net) ;
+%net.mode = 'test' ;
+%for name = {'objective', 'accuracy'}
+%  net.removeLayer(name) ;
+%end
+
+net = dagnn.DagNN.loadobj(load(opts.modelPath)) ;
+net.meta.normalization.averageImage = reshape([122.67891434 116.66876762 104.00698793],1,1,3) ;
+net.meta.normalization.rgbMean = net.meta.normalization.averageImage ;
 net.mode = 'test' ;
-for name = {'objective', 'accuracy'}
-  net.removeLayer(name) ;
-end
 
 % -------------------------------------------------------------------------
 % Train
@@ -58,7 +73,15 @@ confusion = zeros(21) ;
 
 % Run
 
-predVar = net.getVarIndex('prediction') ;
+if 0
+  inputVar = 'input'
+  predVar = net.getVarIndex('prediction') ;
+  needMultiple = true ;
+else
+  inputVar = 'data' ;
+  predVar = net.getVarIndex('upscore') ;
+  needMultiple = false ;
+end
 
 for i = 1:numel(val)
   imId = val(i) ;
@@ -74,21 +97,23 @@ for i = 1:numel(val)
   im = bsxfun(@minus, single(rgb), ...
               reshape(net.meta.normalization.rgbMean,1,1,3)) ;
 
+  if needMultiple
+    sz = [size(im,1), size(im,2)] ;
+    sz_ = round(sz / 32)*32 ;
+    im_ = imresize(im, sz_) ;
+  else
+    im_ = im ;
+  end
 
-  sz = [size(im,1), size(im,2)] ;
-  sz_ = round(sz / 32)*32 ;
-  im_ = imresize(im, sz_) ;
-
-  net.eval({'input', im_}) ;
+  net.eval({inputVar, im_}) ;
   scores_ = gather(net.vars(predVar).value) ;
   [~,pred_] = max(scores_,[],3) ;
 
-  pred = imresize(pred_, sz, 'method', 'nearest') ;
-
-  % sz = min(size(pred), size(lb)) ;
-  %pred = pred(1:sz(1), 1:sz(2)) ;
-  %pred = padarray(pred, size(lb) - size(pred), 'replicate',
-  %'post') ;
+  if needMultiple
+    pred = imresize(pred_, sz, 'method', 'nearest') ;
+  else
+    pred = pred_ ;
+  end
 
   % Accumulate errors
   ok = lb > 0 ;
@@ -99,7 +124,7 @@ for i = 1:numel(val)
     [iu, miu, pacc, macc] = getAccuracies(confusion) ;
     fprintf('IU ') ;
     fprintf('%4.1f ', 100 * iu) ;
-    fprintf('meanIU: %2.f pixelAcc: %.2f, meanAcc: %.2f\n', ...
+    fprintf('\n meanIU: %2.f pixelAcc: %.2f, meanAcc: %.2f\n', ...
             100*miu, 100*pacc, 100*macc) ;
 
     figure(1) ; clf;
