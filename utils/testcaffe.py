@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 import sys
 
 #model = '32s'
-model = '16s'
-#model = '8s'
+#model = '16s'
+model = '8s'
 
 rgb = [122.67891434, 116.66876762, 104.00698793]
 

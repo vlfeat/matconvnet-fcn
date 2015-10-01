@@ -1,9 +1,9 @@
 run ~/src/vlfeat/toolbox/vl_setup
 run matconvnet/matlab/vl_setupnn
 
-model = '32s' ;
+%model = '32s' ;
 %model = '16s' ;
-%model = '8s' ;
+model = '8s' ;
 
 blobs = load(sprintf('../testcaffe/blobs%s.mat', model)) ;
 opts.modelPath = sprintf('matconvnet/data/models/pascal-fcn%s-dag.mat',model) ;
