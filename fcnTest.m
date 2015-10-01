@@ -65,7 +65,7 @@ switch opts.modelFamily
     net = dagnn.DagNN.loadobj(load(opts.modelPath)) ;
     net.mode = 'test' ;
     predVar = net.getVarIndex('upscore') ;
-    inputVar = 'data'
+    inputVar = 'data' ;
     imageNeedsToBeMultiple = false ;
 end
 
@@ -119,7 +119,7 @@ for i = 1:numel(val)
     [iu, miu, pacc, macc] = getAccuracies(confusion) ;
     fprintf('IU ') ;
     fprintf('%4.1f ', 100 * iu) ;
-    fprintf('\n meanIU: %2.f pixelAcc: %.2f, meanAcc: %.2f\n', ...
+    fprintf('\n meanIU: %5.2f pixelAcc: %5.2f, meanAcc: %5.2f\n', ...
             100*miu, 100*pacc, 100*macc) ;
 
     figure(1) ; clf;
@@ -152,8 +152,7 @@ pos = sum(confusion,2) ;
 res = sum(confusion,1)' ;
 tp = diag(confusion) ;
 IU = tp ./ max(1, pos + res - tp) ;
-meanIU = mean(IU(2:end)) ; % note: background is not averaged
-                           % (PASCAL seems to do it this way)
+meanIU = mean(IU) ;
 pixelAccuracy = sum(tp) / max(1,sum(confusion(:))) ;
 meanAccuracy = mean(tp ./ max(1, pos)) ;
 

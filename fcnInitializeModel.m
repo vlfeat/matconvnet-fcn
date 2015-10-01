@@ -25,7 +25,7 @@ drop2 = struct('name', 'dropout2', 'type', 'dropout', 'rate' , 0.5) ;
 net.layers = [net.layers(1:33) drop1 net.layers(34:35) drop2 net.layers(36:end)] ;
 
 % Convert the model from SimpleNN to DagNN
-net = dagnn.DagNN.fromSimpleNN(net) ;
+net = dagnn.DagNN.fromSimpleNN(net, 'canonicalNames', true) ;
 
 % Add more padding to the input layer
 %net.layers(1).block.pad = 100 ;

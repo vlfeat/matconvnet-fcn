@@ -5,8 +5,8 @@ run matconvnet/matlab/vl_setupnn ;
 addpath matconvnet/examples ;
 
 % experiment and data paths
-opts.expDir = 'data/fcn-baseline' ;
-opts.dataDir = 'data/voc12' ;
+opts.expDir = 'data/fcn-baseline-voc11-1' ;
+opts.dataDir = 'data/voc11' ;
 opts.modelType = 'fcn32' ;
 opts.sourceModelPath = 'data/models/imagenet-vgg-verydeep-16.mat' ;
 [opts, varargin] = vl_argparse(opts, varargin) ;
@@ -46,9 +46,7 @@ else
     'includeSegmentation', true, ...
     'includeDetection', false) ;
   if opts.vocAdditionalSegmentations
-    imdb = vocSetupAdditionalSegmentations(imdb, ...
-                                           'dataDir', opts.dataDir, ...
-                                           'preserveValSet', true) ;
+    imdb = vocSetupAdditionalSegmentations(imdb, 'dataDir', opts.dataDir) ;
   end
   mkdir(opts.expDir) ;
   save(opts.imdbPath, '-struct', 'imdb') ;
