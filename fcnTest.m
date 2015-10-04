@@ -6,7 +6,8 @@ addpath matconvnet/examples ;
 % experiment and data paths
 opts.expDir = 'data/fcn-baseline-voc11' ;
 opts.dataDir = 'data/voc11' ;
-opts.modelPath = 'data/fcn-baseline-5/net-epoch-51.mat' ;
+opts.modelPath = 'data/fcn-baseline-7/net-epoch-25.mat' ;
+opts.modelPath = 'data/fcn-baseline-7/net-epoch-45.mat' ;
 opts.modelFamily = 'matconvnet' ;
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
@@ -14,6 +15,7 @@ opts.modelFamily = 'matconvnet' ;
 opts.imdbPath = fullfile(opts.expDir, 'imdb.mat') ;
 opts.vocEdition = '11' ;
 opts.vocAdditionalSegmentations = true ;
+opts.vocAdditionalSegmentationsMergeMode = 2 ;
 opts = vl_argparse(opts, varargin) ;
 
 % -------------------------------------------------------------------------
@@ -31,7 +33,10 @@ else
     'includeSegmentation', true, ...
     'includeDetection', false) ;
   if opts.vocAdditionalSegmentations
-    imdb = vocSetupAdditionalSegmentations(imdb, 'dataDir', opts.dataDir) ;
+    imdb = vocSetupAdditionalSegmentations(...
+      imdb, ...
+      'dataDir', opts.dataDir, ...
+      'mergeMode', opts.vocAdditionalSegmentationsMergeMode) ;
   end
   mkdir(opts.expDir) ;
   save(opts.imdbPath, '-struct', 'imdb') ;
@@ -42,8 +47,9 @@ val = find(imdb.images.set == 2 & imdb.images.segmentation) ;
 
 % Compare the validation set to the one used in the FCN paper
 %valNames = sort(imdb.images.name(val)') ;
-%val11Names = textread('data/seg11valid.txt', '%s') ;
-%assert(isequal(valNames, val11Names)) ;
+%valNames = textread('data/seg11valid.txt', '%s') ;
+%valNames_ = textread('data/seg12valid-tvg.txt', '%s') ;
+%assert(isequal(valNames, valNames_)) ;
 
 % -------------------------------------------------------------------------
 % Setup model
@@ -57,6 +63,7 @@ switch opts.modelFamily
     for name = {'objective', 'accuracy'}
       net.removeLayer(name) ;
     end
+    net.meta.normalization.averageImage = reshape(net.meta.normalization.rgbMean,1,1,3) ;
     predVar = net.getVarIndex('prediction') ;
     inputVar = 'input' ;
     imageNeedsToBeMultiple = true ;
@@ -65,6 +72,13 @@ switch opts.modelFamily
     net = dagnn.DagNN.loadobj(load(opts.modelPath)) ;
     net.mode = 'test' ;
     predVar = net.getVarIndex('upscore') ;
+    inputVar = 'data' ;
+    imageNeedsToBeMultiple = false ;
+
+  case 'TVG'
+    net = dagnn.DagNN.loadobj(load(opts.modelPath)) ;
+    net.mode = 'test' ;
+    predVar = net.getVarIndex('coarse') ;
     inputVar = 'data' ;
     imageNeedsToBeMultiple = false ;
 end

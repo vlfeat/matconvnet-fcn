@@ -1,4 +1,4 @@
-function imdb = voc_init(varargin)
+function imdb = vocSetup(varargin)
 opts.edition = '07' ;
 opts.dataDir = 'data/voc07' ;
 opts.archiveDir = 'data/archives' ;

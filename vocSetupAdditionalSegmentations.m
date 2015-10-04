@@ -14,21 +14,22 @@ function imdb = vocSetupAdditionalSegmentations(imdb, varargin)
 %
 %   Let BT, BV, PT, PV, and PX be the Berkeley training and validation
 %   sets and PASCAL segmentation challenge training, validation, and
-%   test sets. Let S be the union of these sets (images with
-%   segmentations). Let T, V, X the final trainig, validation, and
-%   test sets.
-%
-%   In all cases, X = PX
+%   test sets. Let T, V, X the final trainig, validation, and test
+%   sets.
 %
 %   Mode 1::
 %      V = PV (same validation set as PASCAL)
 %
-%   Mode 2::
+%   Mode 2:: (default))
 %      V = PV \ BT (PASCAL val set that is not a Berkeley training
 %      image)
 %
+%   Mode 3::
+%      V = PV \ (BV + BT)
+%
 %   In all cases:
 %
+%      S = PT + PV + BT + BV
 %      X = PX  (the test set is uncahgend)
 %      T = (S \ V) \ X (the rest is training material)
 
@@ -86,13 +87,15 @@ for i = 1:numel(imdb.images.id)
     isT = false ;
     isV = false ;
   else
-    isX = false ;
     switch opts.mergeMode
       case 1
         isV = isPV ;
       case 2
         isV = isPV & ~isBT ;
+      case 3
+        isV = isPV & ~isBT & ~isBV ;
     end
+    isX = false ;
     isT = ~isV ;
   end
 
