@@ -5,9 +5,9 @@ run matconvnet/matlab/vl_setupnn ;
 addpath matconvnet/examples ;
 
 % experiment and data paths
-opts.expDir = 'data/fcn-baseline-voc11-1' ;
+opts.expDir = 'data/fcn32s-voc11' ;
 opts.dataDir = 'data/voc11' ;
-opts.modelType = 'fcn32' ;
+opts.modelType = 'fcn32s' ;
 opts.sourceModelPath = 'data/models/imagenet-vgg-verydeep-16.mat' ;
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
@@ -26,7 +26,7 @@ opts.train.continue = true ;
 opts.train.gpus = [] ;
 opts.train.prefetch = true ;
 opts.train.expDir = opts.expDir ;
-opts.train.learningRate = 0.0001 * ones(1,175) ;
+opts.train.learningRate = 0.0001 * ones(1,50) ;
 opts.train.numEpochs = numel(opts.train.learningRate) ;
 
 opts = vl_argparse(opts, varargin) ;

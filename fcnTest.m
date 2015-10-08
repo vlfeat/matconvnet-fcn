@@ -4,10 +4,9 @@ run matconvnet/matlab/vl_setupnn ;
 addpath matconvnet/examples ;
 
 % experiment and data paths
-opts.expDir = 'data/fcn-baseline-voc11' ;
+opts.expDir = 'data/fcn32s-voc11' ;
 opts.dataDir = 'data/voc11' ;
-opts.modelPath = 'data/fcn-baseline-7/net-epoch-25.mat' ;
-opts.modelPath = 'data/fcn-baseline-7/net-epoch-45.mat' ;
+opts.modelPath = 'data/fcn32-voc11/net-epoch-50.mat' ;
 opts.modelFamily = 'matconvnet' ;
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
@@ -46,10 +45,10 @@ end
 val = find(imdb.images.set == 2 & imdb.images.segmentation) ;
 
 % Compare the validation set to the one used in the FCN paper
-%valNames = sort(imdb.images.name(val)') ;
-%valNames = textread('data/seg11valid.txt', '%s') ;
-%valNames_ = textread('data/seg12valid-tvg.txt', '%s') ;
-%assert(isequal(valNames, valNames_)) ;
+% valNames = sort(imdb.images.name(val)') ;
+% valNames = textread('data/seg11valid.txt', '%s') ;
+% valNames_ = textread('data/seg12valid-tvg.txt', '%s') ;
+% assert(isequal(valNames, valNames_)) ;
 
 % -------------------------------------------------------------------------
 % Setup model

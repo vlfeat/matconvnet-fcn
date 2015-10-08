@@ -1,5 +1,6 @@
 #!/usr/bin/python
-# make -D CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-6.5  .
+# cmake -D CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-6.5  .
+# make pycaffe
 
 import os
 import scipy
@@ -14,7 +15,8 @@ import sys
 
 #model = '32s'
 #model = '16s'
-model = '8s'
+#model = '8s'
+model = 'googlenet' ;
 
 rgb = [122.67891434, 116.66876762, 104.00698793]
 
@@ -35,15 +37,21 @@ sys.path.insert(0, caffe_root + 'python')
 import caffe
 
 if model == '32s':
-    net = caffe.Classifier('fcn-32s-pascal-deploy.prototxt',
-                           'fcn-32s-pascal.caffemodel')
+    net = caffe.Classifier('data/tmp/fcn/fcn-32s-pascal-deploy.prototxt',
+                           'data/tmp/fcn/fcn-32s-pascal.caffemodel')
 elif model == '16s':
-    net = caffe.Classifier('fcn-16s-pascal-deploy.prototxt',
-                           'fcn-16s-pascal.caffemodel')
+    net = caffe.Classifier('data/tmp/fcn/fcn-16s-pascal-deploy.prototxt',
+                           'data/tmp/fcn/fcn-16s-pascal.caffemodel')
 
 elif model == '8s':
-    net = caffe.Classifier('fcn-8s-pascal-deploy.prototxt',
-                           'fcn-8s-pascal.caffemodel')
+    net = caffe.Classifier('data/tmp/fcn/fcn-8s-pascal-deploy.prototxt',
+                           'data/tmp/fcnfcn-8s-pascal.caffemodel')
+
+elif model == 'googlenet':
+    net = caffe.Classifier('data/tmp/googlenet/train_val_googlenet.prototxt',
+                           'data/tmp/googlenet/imagenet_googlenet.caffemodel')
+    # imaenet mean https://github.com/yosinski/convnet_transfer/raw/master/results/transfer0B0A_1_4/imagenet_mean.binaryproto
+
 else:
     print 'Unknown model', model
     sys.exit(1)
