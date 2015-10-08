@@ -24,7 +24,7 @@ net.addLayer('skip3', ...
 
 f = net.getParamIndex('skip3f') ;
 net.params(f).value = zeros(1, 1, 256, 21, 'single') ;
-net.params(f).learningRate = 1 ;
+net.params(f).learningRate = 0.01 ;
 net.params(f).weightDecay = 1 ;
 
 f = net.getParamIndex('skip3b') ;
