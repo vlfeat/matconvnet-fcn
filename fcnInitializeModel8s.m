@@ -33,7 +33,7 @@ net.params(f).learningRate = 2 ;
 net.params(f).weightDecay = 1 ;
 
 %% Add the sumwise layer
-net.addLayer('sum2', Sum(), {'x42', 'x43'}, 'x44') ;
+net.addLayer('sum2', dagnn.Sum(), {'x42', 'x43'}, 'x44') ;
 
 %% Add deconvolutional layer implementing bilinear interpolation
 filters = single(bilinear_u(16, 21, 21)) ;
