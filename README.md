@@ -29,3 +29,10 @@ This code was developed by
 
 * Sebastien Ehrhardt
 * Andrea Vedaldi
+
+## References
+
+'Fully Convolutional Models for Semantic Segmentation', *Jonathan
+Long, Evan Shelhamer and Trevor Darrell*, CVPR, 2015
+([paper](http://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Long_Fully_Convolutional_Networks_2015_CVPR_paper.pdf)).
+
