@@ -91,8 +91,9 @@ confusion = zeros(21) ;
 
 for i = 1:numel(val)
   imId = val(i) ;
-  rgbPath = sprintf(imdb.paths.image, imdb.images.name{imId}) ;
-  labelsPath = sprintf(imdb.paths.classSegmentation, imdb.images.name{imId}) ;
+  name = imdb.images.name{imId} ;
+  rgbPath = sprintf(imdb.paths.image, name) ;
+  labelsPath = sprintf(imdb.paths.classSegmentation, name) ;
 
   % Load an image and gt segmentation
   rgb = vl_imreadjpeg({rgbPath}) ;
@@ -146,9 +147,9 @@ for i = 1:numel(val)
     displayImage(rgb/255, lb, pred) ;
     drawnow ;
 
-    %   Save segmentation
-    %   imname = strcat(opts.results,sprintf('/%s.png',imdb.images.name{subset(i)}));
-    %   imwrite(pred,labelColors(),imname,'png');
+    % Save segmentation
+    imPath = fullfile(opts.expDir, [name '.png']) ;
+    imwrite(pred,labelColors(),imPath,'png');
   end
 end
 
