@@ -14,7 +14,7 @@ opts.sourceModelPath = 'data/models/imagenet-vgg-verydeep-16.mat' ;
 % experiment setup
 opts.imdbPath = fullfile(opts.expDir, 'imdb.mat') ;
 opts.imdbStatsPath = fullfile(opts.expDir, 'imdbStats.mat') ;
-opts.vocEdition = '12' ;
+opts.vocEdition = '11' ;
 opts.vocAdditionalSegmentations = true ;
 
 opts.numFetchThreads = 1 ; % not used yet
