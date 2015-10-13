@@ -36,3 +36,7 @@ This code was developed by
 Long, Evan Shelhamer and Trevor Darrell*, CVPR, 2015
 ([paper](http://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Long_Fully_Convolutional_Networks_2015_CVPR_paper.pdf)).
 
+## Changes
+
+* v0.9.1 -- Bugfixes.
+* v0.9   -- Initial release. FCN32s and FCN16s work well.
