@@ -1,4 +1,4 @@
-function fcnTest(varargin)
+function info = fcnTest(varargin)
 
 run matconvnet/matlab/vl_setupnn ;
 addpath matconvnet/examples ;
@@ -15,7 +15,18 @@ opts.imdbPath = fullfile(opts.expDir, 'imdb.mat') ;
 opts.vocEdition = '11' ;
 opts.vocAdditionalSegmentations = true ;
 opts.vocAdditionalSegmentationsMergeMode = 2 ;
+opts.gpus = [] ;
 opts = vl_argparse(opts, varargin) ;
+
+resPath = fullfile(opts.expDir, 'results.mat') ;
+if exist(resPath)
+  info = load(resPath) ;
+  return ;
+end
+
+if ~isempty(opts.gpus)
+  gpuDevice(opts.gpus(1))
+end
 
 % -------------------------------------------------------------------------
 % Setup data
@@ -82,6 +93,12 @@ switch opts.modelFamily
     imageNeedsToBeMultiple = false ;
 end
 
+if ~isempty(opts.gpus)
+  gpuDevice(opts.gpus(1)) ;
+  net.move('gpu') ;
+end
+net.mode = 'test' ;
+
 % -------------------------------------------------------------------------
 % Train
 % -------------------------------------------------------------------------
@@ -114,6 +131,10 @@ for i = 1:numel(val)
     im_ = im ;
   end
 
+  if ~isempty(opts.gpus)
+    im_ = gpuArray(im_) ;
+  end
+
   net.eval({inputVar, im_}) ;
   scores_ = gather(net.vars(predVar).value) ;
   [~,pred_] = max(scores_,[],3) ;
@@ -129,12 +150,13 @@ for i = 1:numel(val)
   confusion = confusion + accumarray([lb(ok),pred(ok)],1,[21 21]) ;
 
   % Plots
-  if mod(i - 1,10) == 0 || i == numel(val)
-    [iu, miu, pacc, macc] = getAccuracies(confusion) ;
+  if mod(i - 1,30) == 0 || i == numel(val)
+    clear info ;
+    [info.iu, info.miu, info.pacc, info.macc] = getAccuracies(confusion) ;
     fprintf('IU ') ;
-    fprintf('%4.1f ', 100 * iu) ;
+    fprintf('%4.1f ', 100 * info.iu) ;
     fprintf('\n meanIU: %5.2f pixelAcc: %5.2f, meanAcc: %5.2f\n', ...
-            100*miu, 100*pacc, 100*macc) ;
+            100*info.miu, 100*info.pacc, 100*info.macc) ;
 
     figure(1) ; clf;
     imagesc(normalizeConfusion(confusion)) ;
@@ -152,6 +174,9 @@ for i = 1:numel(val)
     imwrite(pred,labelColors(),imPath,'png');
   end
 end
+
+% Save results
+save(resPath, '-struct', 'info') ;
 
 % -------------------------------------------------------------------------
 function nconfusion = normalizeConfusion(confusion)

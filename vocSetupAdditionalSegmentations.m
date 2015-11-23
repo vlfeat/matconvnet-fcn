@@ -118,14 +118,14 @@ for i = 1:numel(imdb.images.id)
     pngPath = fullfile(opts.dataDir, dir2, [name '.png']) ;
     newPngPath = fullfile(opts.dataDir, dir3, [name '.png']) ;
 
-    if imdb.images.segmentation(i)
-      if ~exist(newPngPath)
+    if ~exist(newPngPath)
+      if imdb.images.segmentation(i)
         copyfile(pngPath, newPngPath, 'f') ;
+      else
+        anno = load(extPath) ;
+        labels = anno.(f).Segmentation ;
+        imwrite(uint8(labels),newPngPath) ;
       end
-    else
-      anno = load(extPath) ;
-      labels = anno.(f).Segmentation ;
-      imwrite(uint8(labels),newPngPath) ;
     end
   end
 
