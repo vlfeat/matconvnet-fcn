@@ -1,7 +1,7 @@
 function imdb = vocSetup(varargin)
 opts.edition = '07' ;
-opts.dataDir = 'data/voc07' ;
-opts.archiveDir = 'data/archives' ;
+opts.dataDir = fullfile('data','voc07') ;
+opts.archiveDir = fullfile('data','archives') ;
 opts.includeDetection = false ;
 opts.includeSegmentation = false ;
 opts.includeTest = false ;
@@ -11,7 +11,7 @@ opts = vl_argparse(opts, varargin) ;
 if ~exist(fullfile(opts.dataDir,'Annotations')), download(opts) ; end
 
 % Source images and classes
-imdb.paths.image = fullfile(opts.dataDir, 'JPEGImages', '%s.jpg') ;
+imdb.paths.image = esc(fullfile(opts.dataDir, 'JPEGImages', '%s.jpg')) ;
 imdb.sets.id = uint8([1 2 3]) ;
 imdb.sets.name = {'train', 'val', 'test'} ;
 imdb.classes.id = uint8(1:20) ;
@@ -31,8 +31,8 @@ if opts.includeTest, [imdb, index] = addImageSet(opts, imdb, index, 'test', 3) ;
 % Source segmentations
 if opts.includeSegmentation
   n = numel(imdb.images.id) ;
-  imdb.paths.objectSegmentation = fullfile(opts.dataDir, 'SegmentationObject', '%s.png') ;
-  imdb.paths.classSegmentation = fullfile(opts.dataDir, 'SegmentationClass', '%s.png') ;
+  imdb.paths.objectSegmentation = esc(fullfile(opts.dataDir, 'SegmentationObject', '%s.png')) ;
+  imdb.paths.classSegmentation = esc(fullfile(opts.dataDir, 'SegmentationClass', '%s.png')) ;
   imdb.images.segmentation = false(1, n) ;
   [imdb, index] = addSegmentationSet(opts, imdb, index, 'train', 1) ;
   [imdb, index] = addSegmentationSet(opts, imdb, index, 'val', 2) ;
@@ -157,7 +157,6 @@ for i=1:length(segNames)
   end
 end
 
-
 % -------------------------------------------------------------------------
 function imdb = getImageSizes(imdb)
 % -------------------------------------------------------------------------
@@ -270,3 +269,10 @@ if x.hasChildNodes
     value = strtrim(horzcat(text{:})) ;
   end
 end
+
+% -------------------------------------------------------------------------
+function str=esc(str)
+% -------------------------------------------------------------------------
+str = strrep(str, '\', '\\') ;
+
+
