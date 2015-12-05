@@ -1,5 +1,5 @@
 function net = fcnInitializeModel8s(net)
-%FCNINITIALIZEMODEL8S Initialize the FCN-16S model from FCN-32
+%FCNINITIALIZEMODEL8S Initialize the FCN-8S model from FCN-16S
 
 %% Remove the last layer
 net.removeLayer('deconv16') ;
