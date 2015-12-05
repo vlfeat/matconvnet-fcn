@@ -9,9 +9,9 @@ classdef SegmentationAccuracy < dagnn.Loss
 
   methods
     function outputs = forward(obj, inputs, params)
-      predictions = gather(inputs{1}) ;
+      [~,predictions] = max(inputs{1}, [], 3) ;
+      predictions = gather(predictions) ;
       labels = gather(inputs{2}) ;
-      [~,predictions] = sort(predictions, 3, 'descend') ;
 
       % compute statistics only on accumulated pixels
       ok = labels > 0 ;
