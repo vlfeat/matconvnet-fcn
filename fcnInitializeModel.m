@@ -13,7 +13,7 @@ if ~exist(opts.sourceModelPath)
   mkdir(fileparts(opts.sourceModelPath)) ;
   urlwrite('http://www.vlfeat.org/matconvnet/models/imagenet-vgg-verydeep-16.mat', opts.sourceModelPath) ;
 end
-net = load(opts.sourceModelPath) ;
+net = vl_simplenn_tidy(load(opts.sourceModelPath)) ;
 
 % -------------------------------------------------------------------------
 %                                  Edit the model to create the FCN version
@@ -48,10 +48,15 @@ end
 
 % Modify the last fully-connected layer to have 21 output classes
 % Initialize the new filters to zero
-for i = net.getParamIndex(net.layers(end-1).params) ;
-  sz = size(net.params(i).value) ;
-  sz(end) = 21 ;
-  net.params(i).value = zeros(sz, 'single') ;
+for i = [1 2]
+  p = net.getParamIndex(net.layers(end-1).params{i}) ;
+  if i == 1
+    sz = size(net.params(p).value) ;
+    sz(end) = 21 ;
+  else
+    sz = [21 1] ;
+  end
+  net.params(p).value = zeros(sz, 'single') ;
 end
 net.layers(end-1).block.size = size(...
   net.params(net.getParamIndex(net.layers(end-1).params{1})).value) ;
@@ -107,7 +112,3 @@ if 0
     drawnow ;
   end
 end
-
-
-
-
