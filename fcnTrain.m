@@ -20,16 +20,17 @@ opts.vocAdditionalSegmentations = true ;
 opts.numFetchThreads = 1 ; % not used yet
 
 % training options (SGD)
-opts.train.batchSize = 20 ;
-opts.train.numSubBatches = 10 ;
-opts.train.continue = true ;
-opts.train.gpus = [] ;
-opts.train.prefetch = true ;
-opts.train.expDir = opts.expDir ;
-opts.train.learningRate = 0.0001 * ones(1,50) ;
-opts.train.numEpochs = numel(opts.train.learningRate) ;
+opts.train = struct([]) ;
+[opts, varargin] = vl_argparse(opts, varargin) ;
 
-opts = vl_argparse(opts, varargin) ;
+trainOpts.batchSize = 20 ;
+trainOpts.numSubBatches = 10 ;
+trainOpts.continue = true ;
+trainOpts.gpus = [] ;
+trainOpts.prefetch = true ;
+trainOpts.expDir = opts.expDir ;
+trainOpts.learningRate = 0.0001 * ones(1,50) ;
+trainOpts.numEpochs = numel(trainOpts.learningRate) ;
 
 % -------------------------------------------------------------------------
 % Setup data
@@ -94,9 +95,11 @@ bopts.rgbMean = stats.rgbMean ;
 bopts.useGpu = numel(opts.train.gpus) > 0 ;
 
 % Launch SGD
-info = cnn_train_dag(net, imdb, getBatchWrapper(bopts), opts.train, ...
-  'train', train, ...
-  'val', val) ;
+info = cnn_train_dag(net, imdb, getBatchWrapper(bopts), ...
+                     trainOpts, ....
+                     'train', train, ...
+                     'val', val, ...
+                     opts.train) ;
 
 % -------------------------------------------------------------------------
 function fn = getBatchWrapper(opts)
